@@ -1,0 +1,23 @@
+{
+    "card": {
+        "fg": {
+            "x": "black",
+            "s": "white",
+            "r": "white",
+            "g": "black",
+            "b": "black"
+        },
+        "bg": {
+            "x": "bgYellow",
+            "s": "bgGrey",
+            "r": "bgRed",
+            "g": "bgGreen",
+            "b": "bgBlue"
+        }
+    },
+    "player": {
+        "current": "green",
+        "lastTrick": "yellow",
+        "default": "white"
+    }
+}
