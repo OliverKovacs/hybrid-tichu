@@ -76,38 +76,29 @@ export interface State {
 
 interface CardObject {
     id: CardId;
+    normalized: CardId;
     value: number;
     sort: number;
     points: number;
-    isSpecial: boolean;
-    isPhoenix: boolean;
 };
 
 export class Card {
     static get(id: CardId): CardObject {
-        const isSpecial = id[0] === "x" && (id[1] === "H" || id[1] === "D");
-        const isPhoenix = id[0] === "x" && (!isSpecial && id[1] !== "1");
+        const isPhoenix = id[0] === "x" && ![ "1", "H", "D" ].includes(id[1]);
         const points = isPhoenix
             ? -25
             : (SYMBOL_TO_POINTS[id[1]] ?? 0)
         return {
             id,
+            normalized: isPhoenix ? "xP" : id,
             value: SYMBOL_TO_VALUE[id[1]],
             sort: Card.sortValue(id),
             points,
-            isSpecial,
-            isPhoenix, 
         };
     }
 
     static isValid(id: CardId) {
         return CARDS_LOOKUP[id] !== undefined;
-    }
-
-    static normalize(id: CardId) {
-        return CARDS_LOOKUP[id].isPhoenix
-            ? "xP"
-            : id;
     }
 
     static sort(id1: CardId, id2: CardId) {
@@ -128,7 +119,7 @@ export class Card {
     }
 
     static equal(id1: CardId, id2: CardId) {
-        return Card.normalize(id1) === Card.normalize(id2);
+        return CARDS_LOOKUP[id1].normalized === CARDS_LOOKUP[id2].normalized;
     }
 
     static points(ids: CardId[]) {
@@ -192,6 +183,8 @@ export class Combination {
 
 
     static isPlayable(combination: Combination, stack: Combination[]) {
+        if (!Combination.isCompatible(combination, stack)) return false;
+
         // allows dog
         if (stack.length === 0) return true;
 
@@ -293,11 +286,11 @@ export class Combination {
     }
 
     containsSpecial() {
-        return this.cards.some(card => CARDS_LOOKUP[card].isSpecial);
+        return this.cards.some(id => id === "xH" || id === "xD");
     }
 
     containsPhoenix() {
-        return this.cards.some(card => CARDS_LOOKUP[card].isPhoenix);
+        return this.cards.some(id => Card.equal(id, "xP"));
     }
 
     isBomb() {
@@ -506,11 +499,7 @@ export class Game {
     }
 
     private setCurrent(value: number) {
+        while (this.state.table[value %= 4].cards.length === 0) value++;
         this.state.current = value;
-        this.state.current %= 4;
-        while (this.state.table[this.state.current].cards.length === 0) {
-            this.state.current++;        
-            this.state.current %= 4;
-        }
     }
 }

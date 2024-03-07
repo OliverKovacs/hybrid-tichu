@@ -1,4 +1,4 @@
-# tichu-ts
+# hybrid-tichu
 
 Tichu implementation in TypeScript focused on simplicity.
 
